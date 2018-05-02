@@ -25,12 +25,10 @@ def identify_keyboard(image) -> (str, np.array):
         points.append(pt)
         new_image = cv.rectangle(new_image, (cur.rect.left, cur.rect.top),
                                  (cur.rect.left + cur.rect.width, cur.rect.top + cur.rect.height), (0, 0, 255))
-    if data is None:
-        return None, None, new_image
-    # cv.imshow('test', new_image)
+    cv.imshow('test', new_image)
     # cv.imwrite('images/qr_test.png', new_image)
-    # cv.waitKey(0)
-    return data.decode("utf-8"), np.array(points), new_image
+    cv.waitKey(0)
+    return data, np.array(points), new_image
 
 
 def midpoint(rect):

@@ -105,33 +105,33 @@ def display_video_real_time(camera_up, camera_down):
         [[i for j in range(background_down.shape[1])] for i in range(background_down.shape[0])])
 
     # creating video streaming windows
-    o_window_name1 = "WebCam Video Streaming 1"
+    # o_window_name1 = "WebCam Video Streaming 1"
     # cv.namedWindow(o_window_name1, flags=cv.WINDOW_AUTOSIZE)
     # cv.moveWindow(o_window_name1, 0, 0)
 
-    p_window_name1 = "Processed Video Streaming 1"
-    cv.namedWindow(p_window_name1, flags=cv.WINDOW_AUTOSIZE)
-    cv.moveWindow(p_window_name1, 0, 0)
+    p_window_name_up = "Processed Video Streaming UP"
+    cv.namedWindow(p_window_name_up, flags=cv.WINDOW_NORMAL)
+    # cv.moveWindow(p_window_name_up, 0, 0)
 
-    b_window_name_up = "Background Image 1"
+    p_window_name_down = "Processed Video Streaming DOWN"
+    cv.namedWindow(p_window_name_down, flags=cv.WINDOW_NORMAL)
+    # cv.moveWindow(p_window_name_down, background_down.shape[1], 0)
+
+    b_window_name_up = "Background Image UP"
     cv.namedWindow(b_window_name_up, flags=cv.WINDOW_NORMAL)
-    cv.resizeWindow(b_window_name_up, background_up.shape[1] // 3, background_up.shape[0] // 3)
-    cv.moveWindow(b_window_name_up, 0, 0)
+    # cv.moveWindow(b_window_name_up, 0, 0)
     cv.imshow(b_window_name_up, np.uint8(background_up))
+    cv.resizeWindow(b_window_name_up, background_up.shape[1] // 3, background_up.shape[0] // 3)
 
-    o_window_name2 = "WebCam Video Streaming 2"
-    cv.namedWindow(o_window_name2, flags=cv.WINDOW_AUTOSIZE)
-    cv.moveWindow(o_window_name2, background_down.shape[1], 0)
-
-    p_window_name2 = "Processed Video Streaming 2"
-    cv.namedWindow(p_window_name2, flags=cv.WINDOW_AUTOSIZE)
-    cv.moveWindow(p_window_name2, background_down.shape[1], 0)
-
-    b_window_name_down = "Background Image 2"
+    b_window_name_down = "Background Image DOWN"
     cv.namedWindow(b_window_name_down, flags=cv.WINDOW_NORMAL)
-    cv.resizeWindow(b_window_name_down, background_down.shape[1] // 3, background_down.shape[0] // 3)
-    cv.moveWindow(b_window_name_down, background_down.shape[1], 0)
+    # cv.moveWindow(b_window_name_down, background_up.shape[1] // 3, 0)
     cv.imshow(b_window_name_down, np.uint8(background_down))
+    cv.resizeWindow(b_window_name_down, background_down.shape[1] // 3, background_down.shape[0] // 3)
+
+    o_window_name_stero = "Disparity"
+    cv.namedWindow(o_window_name_stero, flags=cv.WINDOW_NORMAL)
+    # cv.moveWindow(o_window_name_stero, background_down.shape[1], 0)
 
     while True:
         ret, frame_up = camera_up.read()
@@ -165,10 +165,10 @@ def display_video_real_time(camera_up, camera_down):
                 background_down = cv.resize(background_down, new_shape[::-1])
 
             cv.resizeWindow(b_window_name_up, background_up.shape[1] // 3, background_up.shape[0] // 3)
-            cv.moveWindow(b_window_name_up, 0, 0)
+            # cv.moveWindow(b_window_name_up, 0, 0)
 
             cv.resizeWindow(b_window_name_down, background_down.shape[1] // 3, background_down.shape[0] // 3)
-            cv.moveWindow(b_window_name_down, background_down.shape[1], 0)
+            # cv.moveWindow(b_window_name_down, background_up.shape[1], 0)
 
             cv.imshow(b_window_name_up, np.uint8(background_up))
             cv.imshow(b_window_name_down, np.uint8(background_down))
@@ -202,8 +202,8 @@ def display_video_real_time(camera_up, camera_down):
             frame_up = cv.cvtColor(frame_up, cv.COLOR_BGR2GRAY)
             frame_down = cv.cvtColor(frame_down, cv.COLOR_BGR2GRAY)
 
-            cv.imshow(p_window_name1, np.uint8(frame_up))
-            cv.imshow(p_window_name2, np.uint8(frame_down))
+            cv.imshow(p_window_name_up, np.uint8(frame_up))
+            cv.imshow(p_window_name_down, np.uint8(frame_down))
 
             proc_img_up = noise_filtering(proc_img_up)
             proc_img_down = noise_filtering(proc_img_down)
@@ -225,7 +225,7 @@ def display_video_real_time(camera_up, camera_down):
                 # stereo_dif = np.abs(np.int32(make_disparity(frame_up, frame_down)) - np.int32(
                 #     make_disparity(background_up, background_down)))
                 # print(stereo_dif)
-                cv.imshow(o_window_name2, stereo)
+                cv.imshow(o_window_name_stero, stereo)
 
             if center_y2 is not None:
                 proc_img_down[:, center_y2] = 255
@@ -242,8 +242,8 @@ def display_video_real_time(camera_up, camera_down):
             # pass
             # print(sep_dist * focal_len / abs(center_y1 - center_y2) if abs(center_y1 - center_y2) > 0 else 0)
 
-        # cv.imshow(p_window_name1, np.uint8( proc_img_up ))
-        # cv.imshow(p_window_name2, np.uint8( proc_img_down ))
+        # cv.imshow(p_window_name_up, np.uint8( proc_img_up ))
+        # cv.imshow(p_window_name_down, np.uint8( proc_img_down ))
 
     camera_up.release()
     camera_down.release()
@@ -265,9 +265,9 @@ def get_video_capture(idd):
 
 # main program
 def main():
-    dev_id_up = int(input('Please enter the id of the opened video capturing device #1:\n'))
+    dev_id_up = int(input('Please enter the id of the opened video capturing device UP:\n'))
     camera_up = get_video_capture(dev_id_up)
-    dev_id_down = int(input('Please enter the id of the opened video capturing device #2:\n'))
+    dev_id_down = int(input('Please enter the id of the opened video capturing device DOWN:\n'))
     camera_down = get_video_capture(dev_id_down)
 
     display_video_real_time(camera_up, camera_down)
