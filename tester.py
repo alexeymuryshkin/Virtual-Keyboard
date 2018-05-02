@@ -1,6 +1,6 @@
 import cv2 as cv
+
 from KeyboardLayout import identify_keyboard, transform_image
-from transform import four_point_transform
 
 
 def capture_test_image():
@@ -41,7 +41,7 @@ def check_layout():
 
 def main():
     capture_test_image()
-    #check_layout()
+    # check_layout()
 
 
 if __name__ == "__main__":
