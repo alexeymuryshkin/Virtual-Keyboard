@@ -12,6 +12,7 @@ def transform_image(image, points):
 
 
 def identify_keyboard(image) -> (str, np.array):
+    image = downsample(image)
     objects = find_objects(image)
     points = []
     new_image = np.copy(image)
@@ -29,6 +30,14 @@ def identify_keyboard(image) -> (str, np.array):
     # cv.imwrite('images/qr_test.png', new_image)
     cv.waitKey(0)
     return data, np.array(points), new_image
+
+
+def downsample(image: np.ndarray):
+    image = cv.cvtColor(image, cv.COLOR_RGB2GRAY)
+    k = 3
+    image = np.right_shift(image, k)
+    image = np.left_shift(image, k)
+    return image
 
 
 def midpoint(rect):

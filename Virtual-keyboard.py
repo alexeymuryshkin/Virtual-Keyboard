@@ -39,7 +39,7 @@ def make_disparity(img_l, img_r):
 
 def noise_filtering(frame):
     res = np.uint8(frame)
-    res = gray_image = cv.cvtColor(res, cv.COLOR_BGR2GRAY)
+    # res = gray_image = cv.cvtColor(res, cv.COLOR_BGR2GRAY)
     res = cv.equalizeHist(res)
     res = med_filt_image = cv.medianBlur(res, 3)
 
@@ -96,7 +96,7 @@ def setup_windows():
     # cv.moveWindow(b_window_name_down, background_up.shape[1] // 3, 0)
 
     cv.namedWindow(o_window_name_stereo, flags=cv.WINDOW_NORMAL)
-    # cv.moveWindow(o_window_name_stero, background_down.shape[1], 0)
+    # cv.moveWindow(o_window_name_stereo, background_down.shape[1], 0)
 
 
 class VK:
@@ -105,7 +105,7 @@ class VK:
         super().__init__()
         self.camera_up = get_video_capture(id_up)
         self.camera_down = get_video_capture(id_down)
-        self.new_shape = ()
+        self.new_shape = (720, 1280)
         self.points_up = None
         self.points_down = None
         self.col_index_matrix_y1 = None
@@ -161,6 +161,7 @@ class VK:
             [[i for j in range(background_down.shape[1])] for i in range(background_down.shape[0])])
 
     def display_video_real_time(self):
+        cv.waitKey(1)
         self.setup_background()
 
         while True:
@@ -186,6 +187,9 @@ class VK:
             frame_up = transform_image(frame_up, self.points_up)
             frame_down = transform_image(frame_down, self.points_down)
 
+            frame_up = cv.cvtColor(frame_up, cv.COLOR_RGB2GRAY)
+            frame_down = cv.cvtColor(frame_down, cv.COLOR_RGB2GRAY)
+
             frame_up = cv.resize(frame_up, self.new_shape[::-1])
             frame_down = cv.resize(frame_down, self.new_shape[::-1])
 
@@ -194,9 +198,6 @@ class VK:
 
             proc_img_up = np.copy(frame_up)
             proc_img_down = np.copy(frame_down)
-
-            frame_up = cv.cvtColor(frame_up, cv.COLOR_BGR2GRAY)
-            frame_down = cv.cvtColor(frame_down, cv.COLOR_BGR2GRAY)
 
             cv.imshow(p_window_up, np.uint8(frame_up))
             cv.imshow(p_window_down, np.uint8(frame_down))
