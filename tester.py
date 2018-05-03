@@ -1,6 +1,6 @@
 import cv2 as cv
 
-from KeyboardLayout import identify_keyboard, transform_image
+from KeyboardLayout import identify_keyboard, transform_image, make_vertical_disparity
 
 
 def capture_test_image():
@@ -39,9 +39,18 @@ def check_layout():
     cv.waitKey(0)
 
 
+def check_disparity():
+    frame_up = cv.imread("images/frame_up.png", cv.IMREAD_GRAYSCALE)
+    frame_down = cv.imread("images/frame_down.png", cv.IMREAD_GRAYSCALE)
+    disparity = make_vertical_disparity(frame_up, frame_down)
+    cv.imshow("disparity", disparity)
+    cv.waitKey(0)
+
+
 def main():
-    capture_test_image()
+    # capture_test_image()
     # check_layout()
+    check_disparity()
 
 
 if __name__ == "__main__":

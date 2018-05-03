@@ -6,7 +6,7 @@
 import cv2 as cv
 import numpy as np
 
-from KeyboardLayout import identify_keyboard, transform_image
+from KeyboardLayout import identify_keyboard, transform_image, make_vertical_disparity, make_horizontal_disparity
 
 #   global variables
 sep_dist = 10  # cm
@@ -30,11 +30,6 @@ def get_video_capture(idd):
 
     return cap
 
-
-def make_disparity(img_l, img_r):
-    stereo = cv.StereoBM_create(numDisparities=16, blockSize=15)
-    disparity = stereo.compute(img_l, img_r)
-    return disparity
 
 
 def noise_filtering(frame):
@@ -108,6 +103,8 @@ class VK:
         self.new_shape = (720, 1280)
         self.points_up = None
         self.points_down = None
+        self.background_up = None
+        self.background_down = None
         self.col_index_matrix_y1 = None
         self.col_index_matrix_y2 = None
         self.col_index_matrix_x1 = None
@@ -135,7 +132,8 @@ class VK:
         self.points_up = points_up
         self.points_down = points_down
 
-        if self.points_up is not None and self.points_down is not None and len(self.points_up) == 4 and len(self.points_down) == 4:
+        if self.points_up is not None and self.points_down is not None and len(self.points_up) == 4 and len(
+                self.points_down) == 4:
             background_up = transform_image(background_up, points_up)
             background_down = transform_image(background_down, points_down)
 
@@ -150,6 +148,8 @@ class VK:
         cv.resizeWindow(b_window_name_up, background_up.shape[1] // 3, background_up.shape[0] // 3)
         cv.resizeWindow(b_window_name_down, background_down.shape[1] // 3, background_down.shape[0] // 3)
 
+        self.background_up = background_up
+        self.background_down = background_down
         self.col_index_matrix_y1 = np.array(
             [[j for j in range(background_up.shape[1])] for i in range(background_up.shape[0])])
         self.col_index_matrix_x1 = np.array(
@@ -180,7 +180,8 @@ class VK:
             elif c in ['b', 'B']:
                 self.setup_background()
 
-            if self.points_up is None or self.points_down is None or len(self.points_up) != 4 or len(self.points_down) != 4:
+            if self.points_up is None or self.points_down is None or len(self.points_up) != 4 or len(
+                    self.points_down) != 4:
                 # print("Some error occurred")
                 continue
 
@@ -196,49 +197,14 @@ class VK:
             frame_up = np.flip(np.array(frame_up, dtype=np.uint8), axis=1)
             frame_down = np.flip(np.array(frame_down, dtype=np.uint8), axis=1)
 
-            proc_img_up = np.copy(frame_up)
-            proc_img_down = np.copy(frame_down)
-
             cv.imshow(p_window_up, np.uint8(frame_up))
             cv.imshow(p_window_down, np.uint8(frame_down))
 
-            # proc_img_up = noise_filtering(proc_img_up)
-            # proc_img_down = noise_filtering(proc_img_down)
-            #
-            # proc_img_up = process_frame(proc_img_up, self.background_up)
-            # proc_img_down = process_frame(proc_img_down, self.background_down)
-            # cv.imshow(p_window_name, np.uint8( proc_img ))
+            stereo = make_vertical_disparity(frame_up, frame_down)
+            cv.imshow(o_window_name_stereo, stereo)
 
-            # center_y1 = get_center_y(proc_img_up, self.col_index_matrix_y1)
-            # center_y2 = get_center_y(proc_img_down, self.col_index_matrix_y2)
-            # center_x1 = get_center_x(proc_img_up, self.col_index_matrix_x1)
-            # center_x2 = get_center_x(proc_img_down, self.col_index_matrix_x2)
-            #
-            # if center_x1 is not None and center_x2 is not None:
-            #     mask = proc_img_up != 255
-            #     stereo = make_disparity(cv.rotate(frame_up, cv.ROTATE_90_CLOCKWISE),
-            #                             cv.rotate(frame_down, cv.ROTATE_90_CLOCKWISE))
-            #     # stereo[mask] = 0
-            #     # stereo_dif = np.abs(np.int32(make_disparity(frame_up, frame_down)) - np.int32(
-            #     #     make_disparity(background_up, background_down)))
-            #     # print(stereo_dif)
-            #     cv.imshow(o_window_name_stereo, stereo)
-            #
-            # if center_y2 is not None:
-            #     proc_img_down[:, center_y2] = 255
-            #
-            # if center_y1 is not None:
-            #     proc_img_up[:, center_y1] = 255
-            #
-            # if center_x2 is not None:
-            #     proc_img_down[center_x2, :] = 255
-            #
-            # if center_x1 is not None:
-            #     proc_img_up[center_x1, :] = 255
-            # if center_y1 is not None and center_y2 is not None:
-            # pass
-            # print(sep_dist * focal_len / abs(center_y1 - center_y2) if abs(center_y1 - center_y2) > 0 else 0)
-
+            cv.imwrite("images/frame_up.png", frame_up)
+            cv.imwrite("images/frame_down.png", frame_down)
         self.end_session()
 
     def end_session(self):
@@ -248,8 +214,8 @@ class VK:
 
 
 def main():
-    dev_id_up = 0       # int(input('Please enter the id of the opened video capturing device UP:\n'))
-    dev_id_down = 1     # int(input('Please enter the id of the opened video capturing device DOWN:\n'))
+    dev_id_up = 0  # int(input('Please enter the id of the opened video capturing device UP:\n'))
+    dev_id_down = 1  # int(input('Please enter the id of the opened video capturing device DOWN:\n'))
 
     vk = VK(dev_id_up, dev_id_down)
     vk.display_video_real_time()
